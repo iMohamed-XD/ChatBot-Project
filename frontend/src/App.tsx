@@ -1,19 +1,41 @@
 import { useState } from "react";
+import type { FormEvent } from "react";
 import ReactMarkdown from "react-markdown";
 
+type ChatRole = "user" | "model";
+
+type ChatMessage = {
+  role: ChatRole;
+  text: string;
+};
+
+type ChatResponse = {
+  messages: ChatMessage[];
+  summary: string;
+};
+
 function App() {
-  const [messages, setMessages] = useState([]);
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [prompt, setPrompt] = useState("");
   const [loading, setLoading] = useState(false);
   const [summary, setSummary] = useState("");
+  const [error, setError] = useState("");
 
-  async function sendPrompt(event) {
+  async function sendPrompt(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    if (!prompt.trim() || loading) {
+    const currentPrompt = prompt.trim();
+
+    if (!currentPrompt || loading) {
       return;
     }
 
+    const requestMessages = messages;
+    const userMessage: ChatMessage = { role: "user", text: currentPrompt };
+
+    setMessages([...requestMessages, userMessage]);
+    setPrompt("");
+    setError("");
     setLoading(true);
 
     try {
@@ -23,17 +45,26 @@ function App() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          summary: summary,
-          messages: messages,
-          prompt: prompt,
+          summary,
+          messages: requestMessages,
+          prompt: currentPrompt,
         }),
       });
 
-      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(`Backend returned ${res.status}`);
+      }
+
+      const data = (await res.json()) as ChatResponse;
+
+      if (!Array.isArray(data.messages)) {
+        throw new Error("Backend response did not include messages");
+      }
 
       setMessages(data.messages);
       setSummary(data.summary);
-      setPrompt("");
+    } catch (error) {
+      setError(error instanceof Error ? error.message : "Request failed");
     } finally {
       setLoading(false);
     }
@@ -62,10 +93,16 @@ function App() {
           {loading ? "Loading..." : "Send"}
         </button>
 
+        {error && (
+          <p className="rounded bg-red-100 p-3 text-sm text-red-800">
+            {error}
+          </p>
+        )}
+
         <div className="space-y-3">
           {messages.map((message, index) => (
             <div
-              key={index}
+              key={`${message.role}-${index}`}
               className={
                 message.role === "user"
                   ? "rounded bg-blue-100 p-3 text-slate-900"

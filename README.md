@@ -1,6 +1,6 @@
 # ChatBot Project
 
-A simple chatbot project with a FastAPI backend and a React frontend.
+A simple chatbot project with a FastAPI backend and a React TypeScript frontend.
 
 The frontend sends chat messages to the backend. The backend sends the user's prompt and recent conversation context to Gemini, receives the model response, and returns the updated chat back to the frontend.
 
@@ -8,7 +8,7 @@ The frontend sends chat messages to the backend. The backend sends the user's pr
 
 - Backend: FastAPI
 - AI model: Gemini API through `google-genai`
-- Frontend: React with Vite
+- Frontend: React with Vite and TypeScript
 - Styling: Tailwind CSS
 - Markdown rendering: `react-markdown`
 
@@ -22,9 +22,13 @@ The frontend sends chat messages to the backend. The backend sends the user's pr
 ├── .gitignore
 └── frontend/
     ├── package.json
-    ├── vite.config.js
+    ├── vite.config.ts
+    ├── tsconfig.json
+    ├── tsconfig.app.json
+    ├── tsconfig.node.json
     └── src/
-        ├── App.jsx
+        ├── App.tsx
+        ├── main.tsx
         └── index.css
 ```
 
@@ -117,6 +121,18 @@ The frontend will usually run at:
 
 ```text
 http://localhost:5173
+```
+
+Build and type-check the frontend:
+
+```powershell
+npm run build
+```
+
+Run ESLint:
+
+```powershell
+npm run lint
 ```
 
 ## Running The Full App
@@ -218,4 +234,4 @@ If Gemini does not respond, check that `.env` exists and contains:
 GEMINI_API_KEY=your_gemini_api_key_here
 ```
 
-If Markdown like `**bold**` appears as plain text, make sure `react-markdown` is installed and used in `App.jsx`.
+If Markdown like `**bold**` appears as plain text, make sure `react-markdown` is installed and used in `frontend/src/App.tsx`.
